@@ -4,6 +4,8 @@
 мёртвые настройки. В БЛОКе 1 — DB / Qdrant / scheduler.
 """
 
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -53,6 +55,16 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     llm_extract_model: str = "gpt-4o-mini"
     llm_extract_temperature: float = 0.0
+
+    # Embeddings + Vector DB (БЛОК 4).
+    # `intfloat/multilingual-e5-large` — лучшее качество для RU/EN из тех,
+    # что fastembed поддерживает «из коробки»; модель ~2.24 GB качается
+    # LAZY при первом запросе и кэшируется в named volume `models_cache`.
+    embedder: Literal["e5", "openai"] = "e5"
+    e5_model: str = "intfloat/multilingual-e5-large"
+    embedding_dim: int = 1024
+    openai_embedding_model: str = "text-embedding-3-large"
+    qdrant_collection: str = "resumes"
 
     app_version: str = "0.1.0"
 

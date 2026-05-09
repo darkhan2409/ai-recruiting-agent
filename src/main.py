@@ -24,6 +24,7 @@ from starlette.responses import Response
 from src.api.errors import register_exception_handlers
 from src.api.health import router as health_router
 from src.config import settings
+from src.matching.qdrant_store import init_collection
 from src.workers.ingestion_tick import ingestion_tick
 from src.workers.retention_cleanup import retention_cleanup
 
@@ -64,7 +65,13 @@ def _register_jobs(scheduler: AsyncIOScheduler) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Запускает APScheduler на startup и аккуратно останавливает на shutdown."""
+    """Startup: Qdrant collection + APScheduler. Shutdown: graceful stop."""
+    try:
+        await init_collection()
+    except Exception:
+        # Qdrant down на старте не должен блокировать api — /health покажет
+        # degraded; ingestion упадёт в retry-loop, но api отдаёт endpoints.
+        logger.exception("qdrant: init_collection failed; continuing with degraded vector layer")
     scheduler = AsyncIOScheduler()
     _register_jobs(scheduler)
     scheduler.start()

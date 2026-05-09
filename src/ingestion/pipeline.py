@@ -38,6 +38,8 @@ from src.ingestion.base import (
 )
 from src.ingestion.folder_source import FolderSource
 from src.ingestion.imap_source import IMAPSource
+from src.matching.embedding import embed_passage_with_cache, get_default_embedder
+from src.matching.qdrant_store import upsert_resume
 from src.parsing.pipeline import ParseSuccess, parse_resume
 
 logger = logging.getLogger(__name__)
@@ -173,14 +175,25 @@ async def process_email(session: AsyncSession, email: RawEmail) -> None:
         path = _save_attachment(att, email.message_id)
         parse = await parse_resume(path)
         if isinstance(parse, ParseSuccess):
-            session.add(
-                Candidate(
-                    file_path=str(path),
-                    source_message_id=email.message_id,
-                    language=parse.language.value,
-                    raw_text=parse.text,
-                    parsed_data=parse.resume.model_dump(mode="json"),
-                )
+            candidate = Candidate(
+                file_path=str(path),
+                source_message_id=email.message_id,
+                language=parse.language.value,
+                raw_text=parse.text,
+                parsed_data=parse.resume.model_dump(mode="json"),
+            )
+            session.add(candidate)
+            await session.flush()  # generates candidate.id для Qdrant point id
+            embedder = get_default_embedder()
+            vector = await embed_passage_with_cache(parse.text, embedder, session)
+            await upsert_resume(
+                candidate_id=candidate.id,
+                vector=vector,
+                payload={
+                    "candidate_id": candidate.id,
+                    "language": parse.language.value,
+                    "source_message_id": email.message_id,
+                },
             )
             candidates_added += 1
         else:

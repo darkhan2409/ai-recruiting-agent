@@ -39,6 +39,9 @@ services:
     volumes:
       - resumes_storage:/app/storage/resumes
       - ./storage/inbox:/app/storage/inbox
+      # fastembed кэширует ONNX-модели в ~/.cache/fastembed (~2 GB e5-large).
+      # Без named volume модель качается заново на каждом recreate api.
+      - models_cache:/home/hcb/.cache
     ports:
       - "8000:8000"
 
@@ -68,3 +71,4 @@ volumes:
   postgres_data:
   qdrant_data:
   resumes_storage:
+  models_cache:

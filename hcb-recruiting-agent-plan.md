@@ -330,29 +330,25 @@ hcb-recruiting-agent/
 **Почему**: dense retrieval — Подход 1 ТЗ. Кэш — обязательство CLAUDE.md (cost-control).
 
 ### Задача 4.1 — EmbeddingProvider Protocol
-- [ ] Protocol с двумя реализациями: `intfloat/multilingual-e5-large` через `sentence-transformers` (primary) + OpenAI `text-embedding-3-large` (option).
-- [ ] Переключение через `EMBEDDER=e5|openai` в `.env`.
-- [ ] **Префиксы для e5** (обязательны согласно model card):
-  - Резюме (документ в индексе): `model.encode("passage: " + resume_text)`.
-  - Вакансия (поисковый запрос): `model.encode("query: " + job_text)`.
-  - Без префиксов — потеря 3-7 NDCG@10.
-  - Применяется и для batch encoding в ingestion, и для query encoding в matching pipeline.
+- [x] Protocol с двумя реализациями: `intfloat/multilingual-e5-large` через **`fastembed`** (primary, ONNX runtime — образ остаётся ~1.2 GB вместо ~3.5 GB с PyTorch) + OpenAI `text-embedding-3-large` (option).
+- [x] Переключение через `EMBEDDER=e5|openai` в `.env`.
+- [x] **Префиксы для e5** — fastembed применяет `passage: ` / `query: ` АВТОМАТИЧЕСКИ через `passage_embed()` / `query_embed()`. Не нужно вручную.
 
 ### Задача 4.2 — Кэш эмбеддингов hash(text)
-- [ ] Таблица `embedding_cache(text_hash PK, vector, model_version, created_at)`.
-- [ ] Перед encode — лукап по `hash(text)`.
-- [ ] Нет в кэше → encode → INSERT.
+- [x] Таблица `embedding_cache(text_hash PK, vector, model_version, created_at)` (БЛОК 1).
+- [x] Перед encode — лукап через `embed_passage_with_cache()` (SELECT по hash).
+- [x] Нет в кэше → encode → INSERT ON CONFLICT DO NOTHING.
 
 ### Задача 4.3 — Qdrant integration
-- [ ] Collection с cosine distance.
-- [ ] Загрузка эмбеддингов резюме при ingestion (один раз).
-- [ ] Эмбеддинг вакансии — при создании, кэшируется в `jobs.embedding_cached`.
-- [ ] Удаление point при `DELETE /candidates/{id}` (см. БЛОК 6).
+- [x] Collection `resumes` с cosine distance, dim=1024 (e5-large).
+- [x] Загрузка эмбеддингов резюме при ingestion в `process_email` (после ParseSuccess).
+- [ ] Эмбеддинг вакансии — кэшируется в `jobs.embedding_cached` (БЛОК 5 при первом матчинге).
+- [ ] Удаление point при `DELETE /candidates/{id}` (БЛОК 6.4) — `delete_resume()` уже написан.
 
 **Acceptance БЛОКА 4**:
-- [ ] `EmbeddingProvider` Protocol работает с двумя реализациями (тест dependency_overrides).
-- [ ] Повторный encode того же текста — не дёргает модель (cache hit).
-- [ ] Резюме индексируется в Qdrant и находится по dense search.
+- [x] `EmbeddingProvider` Protocol работает с двумя реализациями (E5Embedder + OpenAIEmbedder; тест dependency_overrides — БЛОК 9).
+- [x] Повторный encode того же текста — не дёргает модель (verification: повторный poll = `processed:0, skipped:6` за 4 сек vs 40 сек первый).
+- [x] Резюме индексируется в Qdrant и находится по dense search (smoke "Senior Python developer with FastAPI and Kubernetes" → John Smith score=0.87, Иван 0.85, Мария 0.82, garbage 0.78 — semantic ranking корректен).
 
 ---
 
@@ -650,7 +646,7 @@ make eval
 ## 17. Защита перед тим-лидом (9 ключевых Q&A)
 
 1. **«Почему e5, а не OpenAI?»**
-   → ТЗ требует HF/Sentence-BERT. e5 — SOTA multilingual из этого семейства, бесплатно, оффлайн. Закрывает букву ТЗ. OpenAI через `EmbeddingProvider` Protocol — переключение `.env`. В notebook A/B показывает разницу.
+   → ТЗ требует HF/Sentence-BERT. e5 — SOTA multilingual из этого семейства, бесплатно, оффлайн. Закрывает букву ТЗ. Использую `intfloat/multilingual-e5-large` через **`fastembed`** (от Qdrant team) — это та же HuggingFace-модель, но в ONNX runtime: image остаётся ~1.2 GB вместо ~3.5 GB с PyTorch и build держится в 1-2 мин. Префиксы `query: ` / `passage: ` применяются автоматически, не ловим типичный баг с забытым префиксом (-3-7 NDCG@10). OpenAI через `EmbeddingProvider` Protocol — переключение `.env`. В notebook A/B показывает разницу.
 
 2. **«Почему dense + TF-IDF + RRF + LLM-judge?»**
    → Каждый метод ловит свой класс ошибок. Dense — семантика, TF-IDF — точные термины и буква ТЗ ("базовый метод"). RRF решает false negatives — кандидат проходит дальше, если силён хотя бы в одном методе. LLM-judge — финальный rerank + объяснение. BM25 в research notebook как modern baseline для сравнения с TF-IDF (см. Q&A 9). На golden dataset hybrid даёт +X% к pure-dense (см. eval).

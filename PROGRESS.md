@@ -3,22 +3,22 @@
 > Рабочий блокнот. Для меня и Claude Code, не для защиты.
 > После закрытия задачи — обновить "Сейчас работаю" + поставить `[x]` в "Что готово".
 
-**Последнее обновление:** 2026-05-09 — закрыт БЛОК 3: Parsing. PDF — `pdfplumber` (pdfminer.six, текст по X/Y), DOCX — `mammoth.extract_raw_text` (whole-document conversion), TXT — `Path.read_text`. Sync→async через `asyncio.to_thread`. Truncate 30 000 chars; `MIN_TEXT_CHARS=200`. Sanitize: 9 regex injection-паттернов. langdetect с `DetectorFactory.seed=0` → `Language.RU/EN`/None. `LLMExtractor` (USE_MOCKS=True → regex-derived Resume; USE_MOCKS=False → `AsyncOpenAI.beta.chat.completions.parse(response_format=Resume)` с tenacity 3-retry exp 1→8s). `SpacyExtractor` — stub в MVP. `parse_resume()` оркестратор: extract→length→language→injection→extract; ошибки мапятся на `QuarantineReason`. Интеграция в `ingestion.process_email`: success → Candidate с заполненными raw_text/parsed_data/language; failure → record_quarantine. Verification: TXT RU/EN happy paths, DOCX (mammoth), quarantine для text_too_short и prompt_injection_suspected (pattern=ignore_previous), worker resilience — unhandled = 0.
+**Последнее обновление:** 2026-05-09 — закрыт БЛОК 4: Embeddings + Vector DB. `EmbeddingProvider` Protocol с двумя реализациями: `E5Embedder` (fastembed `intfloat/multilingual-e5-large`, ONNX runtime, dim=1024, prefixes auto через `passage_embed`/`query_embed`) + `OpenAIEmbedder` (`AsyncOpenAI.embeddings.create`, dim=3072 для text-embedding-3-large). `text_hash(text, model_version)` через sha256 → `embedding_cache.text_hash` PK. `embed_passage_with_cache()` SELECT→INSERT ON CONFLICT DO NOTHING. `qdrant_store`: idempotent `init_collection()` в FastAPI lifespan (graceful degrade при Qdrant down), `upsert_resume(candidate_id, vector, payload)`, `search_resumes(top_k)` через `query_points`, `delete_resume()` готов для БЛОКа 6.4. Интеграция в `ingestion.process_email` после ParseSuccess: `flush()→embed→upsert`. Named volume `models_cache:/home/hcb/.cache` хранит ONNX-модель ~2.24 GB между recreate api. Verification: collection auto-created (1024 cosine), e2e poll 6 файлов → 4 candidates + 4 embedding_cache rows + 4 Qdrant points + 2 quarantine; повторный poll cache-hit (4s vs 40s); smoke search "Senior Python FastAPI Kubernetes" → John (en, 0.87) > Иван (ru, 0.85) > Мария (ru, 0.82) > garbage (0.78) — semantic ranking корректен.
 
 ---
 
 ## Сейчас работаю
 
-Готовлюсь к БЛОКу 4 — Embeddings + Vector DB (`EmbeddingProvider` Protocol: e5 multilingual + OpenAI option, кэш hash(text) в `embedding_cache`, Qdrant collection cosine).
+Готовлюсь к БЛОКу 5 — Matching (3 retrievers: dense через Qdrant + TF-IDF sklearn cosine + LLM-judge gpt-4o; RRF fusion top-20 → LLM-judge rerank top-5; anti-hallucination check; match_cache; оркестратор `find_candidates(job, top_k=5, method, min_score)`).
 
 ---
 
 ## Что дальше
 
-1. БЛОК 4 — Embeddings + Vector DB (`EmbeddingProvider` Protocol: e5 multilingual + OpenAI option, кэш `embedding_cache`, Qdrant collection cosine)
-2. БЛОК 5 — Matching (3 retrievers: dense / TF-IDF / LLM-judge, RRF fusion, anti-hallucination, cache, оркестратор `find_candidates`)
-3. БЛОК 6 — API (`GET/POST /recommendations`, `POST /sync-mail`, `DELETE /candidates/{id}`, `GET /quarantine`, FastAPI Depends DI, job seeder)
-4. БЛОК 7 — UI + объяснимость (Streamlit: top-5, expand-карточки, confidence badges, min_score slider, quarantine review)
+1. БЛОК 5 — Matching (3 retrievers: dense / TF-IDF / LLM-judge, RRF fusion, anti-hallucination, cache, оркестратор `find_candidates`)
+2. БЛОК 6 — API (`GET/POST /recommendations`, `POST /sync-mail`, `DELETE /candidates/{id}`, `GET /quarantine`, FastAPI Depends DI, job seeder)
+3. БЛОК 7 — UI + объяснимость (Streamlit: top-5, expand-карточки, confidence badges, min_score slider, quarantine review)
+4. БЛОК 8 — Research + Eval (golden dataset, NDCG@5/Hit@5/MRR, notebook 5 подходов, error analysis)
 
 ---
 
@@ -64,11 +64,13 @@
 - [x] Интеграция в `ingestion.process_email`: success → `Candidate(raw_text, parsed_data, language)`; failure → `record_quarantine(reason=parse.reason, details=parse.details)`
 
 ### БЛОК 4 — Embeddings + Vector DB
-- [ ] `EmbeddingProvider` Protocol: `intfloat/multilingual-e5-large` primary + OpenAI `text-embedding-3-large` option
-- [ ] **Префиксы** `query:` / `passage:` при encoding (обязательно по model card e5)
-- [ ] Кэш эмбеддингов hash(text) → Postgres `embedding_cache(text_hash PK, vector, model_version)`
-- [ ] Загрузка эмбеддингов резюме в Qdrant при ingestion (один раз)
-- [ ] Эмбеддинг вакансии — кэшируется в `jobs.embedding_cached`
+- [x] `EmbeddingProvider` Protocol (`src/matching/embedding.py`): `E5Embedder` (fastembed `intfloat/multilingual-e5-large`, dim=1024, ONNX runtime) + `OpenAIEmbedder` (`AsyncOpenAI.embeddings.create`, dim=3072 для text-embedding-3-large). `get_default_embedder()` через `lru_cache`. `EMBEDDER=e5|openai` switch.
+- [x] **Префиксы** `query: ` / `passage: ` применяются АВТОМАТИЧЕСКИ через fastembed `passage_embed()` / `query_embed()` — обязательны по model card, без них -3-7 NDCG@10. fastembed убирает risk забыть префикс.
+- [x] Кэш эмбеддингов: `text_hash(text, model_version)` через sha256 (model_version в hash инвалидирует кэш при rotate). `embed_passage_with_cache()` SELECT → INSERT ON CONFLICT DO NOTHING. Queries не кэшируются (varied per vacancy).
+- [x] `qdrant_store.init_collection()` idempotent в FastAPI lifespan (graceful degrade при Qdrant down). `upsert_resume(candidate_id, vector, payload)`. `search_resumes(top_k)` через `query_points`. `delete_resume()` готов для БЛОКа 6.4.
+- [x] Интеграция в `ingestion.process_email` после ParseSuccess: `flush()` для candidate.id → `embed_passage_with_cache(parse.text)` → `upsert_resume(candidate.id, vector, payload={candidate_id, language, source_message_id})`.
+- [x] Named volume `models_cache:/home/hcb/.cache` — fastembed-модель (~2.24 GB) скачивается LAZY при первом poll и кэшируется между recreate api. Image остаётся 1.2 GB (без PyTorch).
+- [ ] Эмбеддинг вакансии — кэшируется в `jobs.embedding_cached` (БЛОК 5 при первом матчинге)
 
 ### БЛОК 5 — Matching
 - [ ] `DenseRetriever` (Qdrant cosine, top-50)
@@ -158,6 +160,7 @@ _Сюда писать короткие записи "выбрал X не Y, п�
 - **2026-05-08**: Бонус Q «scale на 1М резюме» переписан с конкретикой: e5 на on-prem GPU (не CPU), LLM-judge → дистилляция в cross-encoder bge-reranker-v2-m3 (LinkedIn JUDE methodology, -70-90% LLM вызовов), worker → arq/celery при росте throughput. APScheduler в FastAPI работает до ~100 резюме/мин — численная граница для перехода на отдельный worker.
 - **2026-05-08**: Все упоминания «4 подхода» в плане заменены на «5 подходов» (gap matrix, структура репо, вступление БЛОК 8, DoD must-have). Согласованность с notebook задачей 8.2 — dense / TF-IDF / BM25 / LLM-judge / hybrid.
 - **2026-05-09**: **PDF/DOCX парсинг — pdfplumber (PDF) + mammoth (DOCX).** Лицензии MIT/BSD, ~30 MB pip footprint, image ~250 MB, build 1-2 мин — поддерживает обещание plan §1 «`make up` за 60 секунд». pdfplumber через pdfminer.six даёт reading order по X/Y-координатам; mammoth — whole-document `extract_raw_text` без markdown-обёрток. Layout-aware парсер для production (multi-column через ML, table extraction) — roadmap (LlamaParse / LandingAI ADE) через тот же `extract_text` интерфейс, downstream LLM-extract инвариантен. Q&A 7 переформулирован: senior-defense через protocol-thinking + сознательный trade-off на скорость setup-а.
+- **2026-05-09**: **Embeddings stack — fastembed + e5-large.** ТЗ требует Sentence-BERT/HF, plan §4 specifies `intfloat/multilingual-e5-large`. Использую ту же модель через `fastembed` (Qdrant team's ONNX runtime) вместо `sentence-transformers`. Trade-off: fastembed library ~50 MB lib + onnxruntime ~50 MB vs `sentence-transformers + PyTorch` ~2 GB. Image остаётся 1.2 GB вместо ~3.5 GB. Модель (2.24 GB ONNX) скачивается LAZY при первом запросе и кэшируется в named volume `models_cache:/home/hcb/.cache`. Префиксы `passage: `/`query: ` применяются автоматически через `passage_embed()`/`query_embed()`. Plan §4.1 / Q&A 1 обновлены — буква ТЗ закрыта (та же HF-модель), runtime выбор объясним как trade-off на лёгкость setup. Roadmap: при необходимости — переключение на `sentence-transformers` через второй `EmbeddingProvider` impl (signature идентичная).
 - **2026-05-09**: **Audit перед БЛОКом 4** — найдено 4 HIGH / 6 MEDIUM / 9 LOW. Исправлены сейчас:
   - H1 docstring `process_email` (статус письма quarantined wins при mixed success/failure — сохраняем сигнал что было review-кандидата);
   - H3 `_PHONE_RE` ужесточён (lookaround `(?<!\w)`/`(?!\w)` + структура `+? country code (3) 3-2-2`) — больше не ловит «2021-2026» как телефон;

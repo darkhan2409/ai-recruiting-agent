@@ -25,6 +25,7 @@ dependencies = [
     "mammoth>=1.8",
     "openai>=1.50",
     "langdetect>=1.0.9",
+    "fastembed>=0.4",
 ]
 
 [project.optional-dependencies]
@@ -50,7 +51,7 @@ quote-style = "double"
 
 [tool.mypy]
 python_version = "3.11"
-files = ["src/schemas.py", "src/parsing"]
+files = ["src/schemas.py", "src/parsing", "src/matching"]
 strict = true
 plugins = ["pydantic.mypy"]
 
@@ -61,5 +62,8 @@ module = [
     "mammoth", "mammoth.*",
     "openai", "openai.*",
     "tenacity", "tenacity.*",
+    "fastembed", "fastembed.*",
+    "qdrant_client", "qdrant_client.*",
+    "numpy", "numpy.*",
 ]
 ignore_missing_imports = true
