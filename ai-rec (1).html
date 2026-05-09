@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recruiting Agent - Тестовое задание</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: #1f2937;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="30" cy="30" r="4"/></g></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            color: #374151;
+            padding-left: 1rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0284c7;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .data-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .data-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-card h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 1rem;
+        }
+
+        .approaches {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .approach-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .approach-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .approach-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        .bonus-section {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #10b981;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .bonus-section h2 {
+            color: #065f46;
+        }
+
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .criteria-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .criteria-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+            margin: 3rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            .data-types, .approaches {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>🤖 AI Recruiting Agent</h1>
+                <p>Тестовое задание для разработчика</p>
+            </div>
+            
+            <div class="content">
+                <div class="section">
+                    <h2><span class="icon">🎯</span>Цель</h2>
+                    <div class="highlight-box">
+                        <p>Создать прототип ИИ-агента, который помогает рекрутеру обрабатывать резюме, сопоставлять их с вакансиями и рекомендовать подходящих кандидатов.</p>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="section">
+                    <h2><span class="icon">📋</span>Входные данные</h2>
+                    <div class="data-types">
+                        <div class="data-card">
+                            <h4>📄 Резюме кандидатов</h4>
+                            <ul>
+                                <li>Приходят на e-mail: <code>cv@company.com</code></li>
+                                <li>Формат: какой угодно кандидатам</code></li>
+                                <li>Автоматическое получение из почтового ящика</li>
+                            </ul>
+                        </div>
+                        <div class="data-card">
+                            <h4>💼 Описание вакансий</h4>
+                            <ul>
+                                <li>Хранятся в текстовом виде</li>
+                                <li>Содержат: требования, обязанности, стек технологий</li>
+                                <li>Могут быть в отдельной папке или базе</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2><span class="icon">⚙️</span>Требования к решению</h2>
+                    
+                    <h3>1. Интеграция с почтой</h3>
+                    <ul>
+                        <li>Подключение к почтовому ящику (IMAP/SMTP)</li>
+                        <li>Автоматическое скачивание новых резюме</li>
+                        <li>Сохранение в локальное хранилище</li>
+                    </ul>
+
+                    <h3>2. Обработка резюме и вакансий</h3>
+                    <ul>
+                        <li>Парсинг в структурированный формат: навыки, опыт, образование</li>
+                        <li>NLP-подходы: токенизация, эмбеддинги, NER</li>
+                        <li>Извлечение ключевых слов</li>
+                    </ul>
+
+                    <h3>3. Модель сопоставления</h3>
+                    <p>Реализовать <strong>три подхода</strong>:</p>
+                    
+                    <div class="approaches">
+                        <div class="approach-card">
+                            <h4>1. Семантическое сравнение</h4>
+                            <p>Эмбеддинги (Sentence-BERT / USE / HuggingFace)</p>
+                            <p><strong>Метрика:</strong> cosine similarity</p>
+                        </div>
+                        <div class="approach-card">
+                            <h4>2. TF-IDF + ML-классификатор</h4>
+                            <p>Базовый метод для сравнения результатов</p>
+                        </div>
+                        <div class="approach-card">
+                            <h4>3. LLM (Large Language Model)</h4>
+                            <p>OpenAI GPT, HuggingFace LLaMA, Mistral</p>
+                            <p><strong>Prompt:</strong> Сопоставление с объяснением релевантности 0-1</p>
+                        </div>
+                    </div>
+
+                    <h3>4. Агент</h3>
+                    <ul>
+                        <li>Сервис на FastAPI/Flask</li>
+                        <li>Поддержка нескольких языков (русский + английский)</li>
+                        <li>Принимает <code>job_id</code> или текст вакансии</li>
+                        <li>Возвращает топ-5 релевантных кандидатов</li>
+                        <li>REST API: <code>GET /recommendations?job_id=123</code></li>
+                        <li>Фронт на Streamlit</li>
+                        <li>Использование Docker для упаковки решения</li>
+                    </ul>
+
+                    <h3>5. Документация</h3>
+                    <ul>
+                        <li>Jupyter Notebook или Markdown-отчёт</li>
+                        <li>Описание архитектуры и этапов обработки</li>
+                        <li>Примеры работы модели и API</li>
+                    </ul>
+                </div>
+
+                <div class="bonus-section">
+                    <h2><span class="icon">🚀</span>Бонус</h2>
+                    <ul>
+                        <li>Объяснения от агента с помощью LLM</li>
+                        <li>Пайплайн автоматического обновления</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h2><span class="icon">📊</span>Критерии оценки</h2>
+                    <div class="criteria-grid">
+                        <div class="criteria-item">
+                            <strong>Обработка резюме</strong>
+                            <p>Корректность парсинга</p>
+                        </div>
+                        <div class="criteria-item">
+                            <strong>Качество матчинга</strong>
+                            <p>Точность сопоставления</p>
+                        </div>
+                        <div class="criteria-item">
+                            <strong>Архитектура</strong>
+                            <p>Расширяемость решения</p>
+                        </div>
+                        <div class="criteria-item">
+                            <strong>Чистота кода</strong>
+                            <p>Документация</p>
+                        </div>
+                        <div class="criteria-item">
+                            <strong>Объяснимость</strong>
+                            <p>Понятность решений агента</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

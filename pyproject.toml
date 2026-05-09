@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hcb-recruiting-agent"
+version = "0.1.0"
+description = "AI-агент для подбора резюме под вакансию (HCB)"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "fastapi>=0.115,<0.120",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy[asyncio]>=2.0.30",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "apscheduler>=3.10,<4.0",
+    "qdrant-client>=1.10",
+    "httpx>=0.27",
+    "streamlit>=1.36",
+    "imap-tools>=1.6",
+    "tenacity>=8.2",
+    "pdfplumber>=0.11",
+    "mammoth>=1.8",
+    "openai>=1.50",
+    "langdetect>=1.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/schemas.py", "src/parsing"]
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "langdetect", "langdetect.*",
+    "pdfplumber", "pdfplumber.*",
+    "mammoth", "mammoth.*",
+    "openai", "openai.*",
+    "tenacity", "tenacity.*",
+]
+ignore_missing_imports = true
