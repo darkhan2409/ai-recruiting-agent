@@ -26,12 +26,28 @@ dependencies = [
     "openai>=1.50",
     "langdetect>=1.0.9",
     "fastembed>=0.4",
+    "scikit-learn>=1.5",
+    "rapidfuzz>=3.8",
 ]
 
 [project.optional-dependencies]
 dev = [
     "ruff>=0.5",
     "mypy>=1.10",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+# Research notebook (notebooks/methods_comparison.ipynb) — БЛОК 8 хвосты.
+# Не входит в production docker image. Установка: `pip install -e ".[research]"`.
+research = [
+    "rank-bm25>=0.2.2",
+    "spacy>=3.7,<4.0",
+    "yake>=0.4.8",
+    "rake-nltk>=1.0.6",
+    "nltk>=3.8",
+    "matplotlib>=3.8",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
 ]
 
 [tool.setuptools.packages.find]
@@ -45,6 +61,11 @@ extend-exclude = ["alembic/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# scripts/ — one-off builders с большими string-литералами (markdown/code blobs
+# для notebook). Line-length-проверка тут шумит без пользы.
+"scripts/*" = ["E501"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -65,5 +86,15 @@ module = [
     "fastembed", "fastembed.*",
     "qdrant_client", "qdrant_client.*",
     "numpy", "numpy.*",
+    "sklearn", "sklearn.*",
+    "rapidfuzz", "rapidfuzz.*",
+    "apscheduler", "apscheduler.*",
+    "imap_tools", "imap_tools.*",
 ]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: e2e тесты против поднятого Docker-стека (skip по умолчанию)",
+]
+addopts = "-m 'not integration'"

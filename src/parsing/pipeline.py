@@ -3,7 +3,8 @@
 Шаги (любая ошибка → ParseFailure с правильным QuarantineReason):
   1. extract_text — pdfplumber / mammoth / TXT → plain-text или None
   2. длина < MIN_TEXT_CHARS → text_too_short (txt/docx) или vlm_extract_failed (pdf-скан)
-  3. detect_language → ru/en или lang_unknown
+  3. detect_language → ru/en; при неуверенности → fallback EN (билингвальные/
+     короткие тексты не должны блокировать pipeline)
   4. detect_injection → нашли паттерн → prompt_injection_suspected
   5. extractor.extract → Resume или extract_failed (после tenacity-3-ретрая)
 
@@ -24,6 +25,7 @@ from src.parsing.language import detect_language
 from src.parsing.sanitize import detect_injection
 from src.parsing.text_extract import MIN_TEXT_CHARS, extract_text
 from src.schemas import Language, Resume
+from src.utils.pii import mask_pii
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +68,14 @@ async def parse_resume(path: Path) -> ParseResult:
 
     language = detect_language(text)
     if language is None:
-        return ParseFailure(
-            QuarantineReason.LANG_UNKNOWN,
-            {"path": str(path), "first_chars": text[:200]},
+        # Билингвальные резюме (русский с английской терминологией) и
+        # короткие шумные тексты сбивают langdetect. LLM-extract к языку
+        # толерантен — пропускаем дальше с language=EN.
+        logger.info(
+            "language: fallback EN for %s (langdetect uncertain or non-ru/en code)",
+            path.name,
         )
+        language = Language.EN
 
     injection = detect_injection(text)
     if injection is not None:
@@ -82,12 +88,12 @@ async def parse_resume(path: Path) -> ParseResult:
     try:
         resume = await get_default_extractor().extract(text, language)
     except Exception as exc:
-        # TODO (БЛОК 9.3): str(exc) может содержать фрагменты резюме —
-        # обернуть mask_pii() перед записью в quarantine.details.
+        # str(exc) может содержать фрагменты резюме (DATA_POLICY §«Логи»):
+        # mask_pii маскирует email/phone до записи в БД и логов.
         logger.exception("parse_resume: extractor failed for %s", path.name)
         return ParseFailure(
             QuarantineReason.EXTRACT_FAILED,
-            {"path": str(path), "error": str(exc)[:500]},
+            {"path": str(path), "error": mask_pii(str(exc))[:500]},
         )
 
     return ParseSuccess(text=text, language=language, resume=resume)

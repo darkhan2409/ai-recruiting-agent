@@ -45,7 +45,7 @@ class IngestionSource(Protocol):
     """Источник писем. Один метод — один опрос.
 
     Реализации должны быть idempotency-safe сами по себе (дважды позвал —
-    не получил дубликаты), но финальная защита — таблица `processed_emails`.
+    не получил дубликаты), но финальный safety net — таблица `processed_emails`.
     """
 
     async def poll_once(self) -> list[RawEmail]: ...

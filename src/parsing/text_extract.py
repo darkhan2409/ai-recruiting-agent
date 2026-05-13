@@ -46,6 +46,16 @@ def _extract_docx(path: Path) -> str:
     return str(result.value)
 
 
+def extract_docx_from_bytes(data: bytes) -> str:
+    """Извлечь raw text из DOCX в памяти (для FastAPI UploadFile).
+
+    Sync; вызывающий код сам обернёт через `asyncio.to_thread`.
+    """
+    import io
+
+    return str(mammoth.extract_raw_text(io.BytesIO(data)).value)
+
+
 def _extract_sync(path: Path) -> str | None:
     """Синхронная маршрутизация по расширению + truncate.
 

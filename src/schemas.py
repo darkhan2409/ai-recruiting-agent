@@ -158,6 +158,30 @@ class Job(_StrictModel):
     )
 
 
+class JobParsed(_StrictModel):
+    """LLM-извлечённые поля из DOCX-документа вакансии.
+
+    Используется как `response_format` для `POST /jobs/parse-document` (gpt-4o-mini
+    structured output). Рекрутёр получает заполненную форму, правит и шлёт
+    обратно через `POST /jobs`. Все рекрутёрские поля опциональны: LLM возвращает
+    null, если в документе нет соответствующего раздела (не выдумывает).
+    """
+
+    title: str = Field(description="Название должности.")
+    description: str = Field(description="Описание вакансии и требования.")
+    department: str | None = Field(default=None, description="Отдел / подразделение.")
+    experience_years: str | None = Field(default=None, description="Требуемый опыт.")
+    work_format: str | None = Field(default=None, description="Формат: офис/гибрид/удалёнка.")
+    salary_range: str | None = Field(default=None, description="Зарплатная вилка.")
+    responsibilities: str | None = Field(default=None, description="Обязанности.")
+    conditions: str | None = Field(default=None, description="Условия и бенефиты.")
+    required_skills: list[str] = Field(
+        default_factory=list,
+        description="Ключевые технические навыки и технологии (lowercase).",
+    )
+    language: str = Field(description="Язык вакансии: ru | en.")
+
+
 class MatchResult(_StrictModel):
     """Результат матчинга одного кандидата под одну вакансию — выход LLM-judge.
 
@@ -185,7 +209,7 @@ class MatchResult(_StrictModel):
     )
     confidence: Confidence = Field(description="Уверенность LLM-judge в оценке.")
     explanation: str = Field(description="Короткое NL-объяснение оценки.")
-    recommendation: Recommendation = Field(description="Действие: интервью / рассмотреть / отказ.")
+    recommendation: Recommendation = Field(description="Действие: встреча / рассмотреть / отказ.")
     quotes: list[str] = Field(
         default_factory=list,
         description="Цитаты из резюме, подтверждающие matched_skills (anti-hallucination).",

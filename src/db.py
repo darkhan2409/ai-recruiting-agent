@@ -51,6 +51,7 @@ class Candidate(Base):
     raw_text: Mapped[str | None] = mapped_column(Text)
     parsed_data: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     language: Mapped[str | None] = mapped_column(String(10))
+    content_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     source_message_id: Mapped[str | None] = mapped_column(String(500), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -100,6 +101,13 @@ class ProcessedEmail(Base):
     error: Mapped[str | None] = mapped_column(Text)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # `updated_at` нужен для retention cleanup (БЛОК 10.4) — отличить «давно
+    # упало в dead_letter» от «свежее». ORM-уровень `onupdate` не сработает
+    # для raw SQL `update()`/`pg_insert.on_conflict_do_update`, поэтому
+    # вызывающий код явно проставляет `updated_at=func.now()` в set_/values.
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
 
 class Quarantine(Base):
@@ -151,17 +159,6 @@ class MatchCache(Base):
     prompt_version: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-
-class EmbeddingCache(Base):
-    """Кэш эмбеддингов: hash(text) → vector. Снимает повторные encode-вызовы."""
-
-    __tablename__ = "embedding_cache"
-
-    text_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
-    vector: Mapped[list[float]] = mapped_column(JSONB)
-    model_version: Mapped[str] = mapped_column(String(50))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 # --- Async engine + session factory ---

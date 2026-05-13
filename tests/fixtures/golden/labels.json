@@ -1,0 +1,362 @@
+[
+  {
+    "resume_filename": "01_alexey_morozov_python_backend.docx",
+    "job_filename": "01_python_backend.json",
+    "label": 1.0,
+    "rationale": "Senior Python Backend, Kaspi.kz. Все ключевые навыки закрыты: Python, FastAPI, PostgreSQL, Docker, Redis + Kafka, SQLAlchemy 2.0 (бонусы из вакансии). 6+ лет опыта при требовании 3+. Идеальный матч."
+  },
+  {
+    "resume_filename": "14_artem_vorontsov_python_backend.txt",
+    "job_filename": "01_python_backend.json",
+    "label": 1.0,
+    "rationale": "Backend Developer с 3 годами FastAPI + SQLAlchemy 2.0 async + PostgreSQL + Redis + Docker. Все ключевые требования закрыты. Чуть меньше опыта чем 3+ требуемых (3 года ровно), но стек идеален."
+  },
+  {
+    "resume_filename": "11_sergey_litvinov_django.pdf",
+    "job_filename": "01_python_backend.json",
+    "label": 0.5,
+    "rationale": "Python 4 года, PostgreSQL, Docker, Redis — есть. Но FastAPI и asyncio только изучает, нет коммерческого опыта. Сильный Django-разработчик может переучиться, но не immediate hire под FastAPI-роль."
+  },
+  {
+    "resume_filename": "15_bekzat_mukhamedov_java.docx",
+    "job_filename": "01_python_backend.json",
+    "label": 0.0,
+    "rationale": "Java backend engineer. Сильный, но не Python. Явно указывает 'NOT my stack: Python'. Технологически другой стек."
+  },
+  {
+    "resume_filename": "16_alikhan_bekturov_ios.docx",
+    "job_filename": "01_python_backend.json",
+    "label": 0.0,
+    "rationale": "iOS Mobile Developer. Не backend, не Python. Совершенно другой технологический стек."
+  },
+  {
+    "resume_filename": "17_natalia_kravchenko_qa.pdf",
+    "job_filename": "01_python_backend.json",
+    "label": 0.0,
+    "rationale": "QA Engineer, не backend разработчик. Знает Python только для написания тестов (Playwright). Явно указывает 'НЕ являюсь разработчиком'."
+  },
+  {
+    "resume_filename": "18_aruzhan_bektasova_student.txt",
+    "job_filename": "01_python_backend.json",
+    "label": 0.0,
+    "rationale": "Студент 1 курса с базовыми знаниями Python (50 строк калькулятора). Нет коммерческого опыта. Вакансия требует 3+ года."
+  },
+  {
+    "resume_filename": "19_viktor_semenov_1c.pdf",
+    "job_filename": "01_python_backend.json",
+    "label": 0.0,
+    "rationale": "Программист 1С. Совершенно другая платформа и язык (встроенный язык 1С). Не Python-разработчик. Явно указывает 'Не работаю с: веб-разработка, Python, ML/AI'."
+  },
+  {
+    "resume_filename": "20_igor_yakovlev_angular.pdf",
+    "job_filename": "01_python_backend.json",
+    "label": 0.0,
+    "rationale": "Senior Angular Frontend Developer без Python-опыта. Совершенно другой стек и роль (frontend vs backend), не подходит."
+  },
+  {
+    "resume_filename": "02_aigul_seitzhanova_ml_credit.docx",
+    "job_filename": "02_ml_credit_scoring.json",
+    "label": 1.0,
+    "rationale": "Senior ML Engineer с прямым опытом credit scoring в Halyk Bank. CatBoost, PD-моделирование, Basel III, валидация по требованиям НБРК. Закрывает все требования вакансии."
+  },
+  {
+    "resume_filename": "12_olga_petrenko_ml.pdf",
+    "job_filename": "02_ml_credit_scoring.json",
+    "label": 0.5,
+    "rationale": "ML Engineer с 3 годами classical ML (LightGBM, XGBoost, sklearn). Технические навыки совпадают, но опыт в retail и logistics, не в credit scoring. Открыта к обучению, явно указывает 'NOT worked with credit scoring'."
+  },
+  {
+    "resume_filename": "11_sergey_litvinov_django.pdf",
+    "job_filename": "02_ml_credit_scoring.json",
+    "label": 0.0,
+    "rationale": "Django Senior разработчик без ML-опыта. Имеет Python но нет знаний sklearn/xgboost/credit scoring domain."
+  },
+  {
+    "resume_filename": "13_ruslan_kairov_ml_general.docx",
+    "job_filename": "02_ml_credit_scoring.json",
+    "label": 0.0,
+    "rationale": "ML Engineer с CV+tabular фокусом. Нет опыта credit scoring и финтех-моделей, несмотря на ML background."
+  },
+  {
+    "resume_filename": "17_natalia_kravchenko_qa.pdf",
+    "job_filename": "02_ml_credit_scoring.json",
+    "label": 0.0,
+    "rationale": "QA Engineer (Playwright), не ML разработчик. Python только для тестов, нет ML/моделирования."
+  },
+  {
+    "resume_filename": "03_dmitry_sokolov_data_engineer.docx",
+    "job_filename": "03_data_engineer.json",
+    "label": 1.0,
+    "rationale": "Data Engineer с 3 годами в Jusan Bank. Все требования закрыты: Python, Airflow, PySpark, Kafka, SQL, ClickHouse. Прямой банковский опыт."
+  },
+  {
+    "resume_filename": "12_olga_petrenko_ml.pdf",
+    "job_filename": "03_data_engineer.json",
+    "label": 0.0,
+    "rationale": "ML Engineer классический LightGBM/XGBoost. Не Data Engineer, нет Airflow/Kafka/ETL опыта."
+  },
+  {
+    "resume_filename": "14_artem_vorontsov_python_backend.txt",
+    "job_filename": "03_data_engineer.json",
+    "label": 0.0,
+    "rationale": "FastAPI Backend Developer. Нет опыта Data Engineering, Spark, Airflow, масштабирования данных."
+  },
+  {
+    "resume_filename": "15_bekzat_mukhamedov_java.docx",
+    "job_filename": "03_data_engineer.json",
+    "label": 0.0,
+    "rationale": "Java Backend engineer. Не Python-стек, нет опыта с инструментами Data Engineering (Airflow/PySpark/Kafka)."
+  },
+  {
+    "resume_filename": "20_igor_yakovlev_angular.pdf",
+    "job_filename": "03_data_engineer.json",
+    "label": 0.0,
+    "rationale": "Senior Angular Frontend Developer. Совершенно другой стек, нет опыта Data Engineering или Python."
+  },
+  {
+    "resume_filename": "04_yerlan_akhmetov_devops.docx",
+    "job_filename": "04_devops_engineer.json",
+    "label": 1.0,
+    "rationale": "Senior DevOps с 5 годами в Freedom Finance. Все требования: Kubernetes (EKS), Terraform, AWS, CI/CD (GitLab CI + ArgoCD), Linux. Сертификаты CKA, AWS SAA. Финтех-опыт. Идеальный матч."
+  },
+  {
+    "resume_filename": "15_bekzat_mukhamedov_java.docx",
+    "job_filename": "04_devops_engineer.json",
+    "label": 0.5,
+    "rationale": "Не DevOps, но имеет смежные навыки: Docker, basic Kubernetes, Kafka, JVM-tuning. Backend инженер может перейти в DevOps при необходимости, но не прямой матч."
+  },
+  {
+    "resume_filename": "11_sergey_litvinov_django.pdf",
+    "job_filename": "04_devops_engineer.json",
+    "label": 0.0,
+    "rationale": "Django Senior разработчик, не DevOps/инфраструктура. Нет K8s, Terraform, AWS production experience."
+  },
+  {
+    "resume_filename": "12_olga_petrenko_ml.pdf",
+    "job_filename": "04_devops_engineer.json",
+    "label": 0.0,
+    "rationale": "ML Engineer, совсем не инфра. Нет K8s/Terraform/CI-CD и опыта управления продакшеном."
+  },
+  {
+    "resume_filename": "17_natalia_kravchenko_qa.pdf",
+    "job_filename": "04_devops_engineer.json",
+    "label": 0.0,
+    "rationale": "QA Engineer (Playwright). Не DevOps, нет AWS/K8s/Terraform опыта, фокус на тестировании."
+  },
+  {
+    "resume_filename": "05_anastasia_ivanova_frontend.docx",
+    "job_filename": "05_frontend_developer.json",
+    "label": 1.0,
+    "rationale": "Frontend Developer в Kaspi.kz, 4 года коммерческого опыта с React + TypeScript + Redux Toolkit. Closes all stack requirements + accessibility и Cypress."
+  },
+  {
+    "resume_filename": "20_igor_yakovlev_angular.pdf",
+    "job_filename": "05_frontend_developer.json",
+    "label": 0.5,
+    "rationale": "Senior Frontend Developer с 5 годами опыта, но на Angular, не React. Сильный TypeScript, общие FE-навыки переносимы, но конкретный стек вакансии (React+Redux Toolkit) не закрыт. Явно указывает 'NOT my stack: React'."
+  },
+  {
+    "resume_filename": "01_alexey_morozov_python_backend.docx",
+    "job_filename": "05_frontend_developer.json",
+    "label": 0.0,
+    "rationale": "Senior Python Backend (FastAPI/Postgres). Совсем не frontend, нет React/TS/CSS опыта."
+  },
+  {
+    "resume_filename": "03_dmitry_sokolov_data_engineer.docx",
+    "job_filename": "05_frontend_developer.json",
+    "label": 0.0,
+    "rationale": "Data Engineer. Совсем не frontend разработчик, нет React/TypeScript/UI опыта."
+  },
+  {
+    "resume_filename": "04_yerlan_akhmetov_devops.docx",
+    "job_filename": "05_frontend_developer.json",
+    "label": 0.0,
+    "rationale": "Senior DevOps инженер. Infrastructure focus, нет React/frontend разработки."
+  },
+  {
+    "resume_filename": "16_alikhan_bekturov_ios.docx",
+    "job_filename": "05_frontend_developer.json",
+    "label": 0.0,
+    "rationale": "Mobile (iOS), не web frontend. React Native упомянут вскользь как 'helped on one small project'. Не подходит для Frontend Web вакансии с React."
+  },
+  {
+    "resume_filename": "06_timur_bekmuratov_ai_llm.pdf",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 1.0,
+    "rationale": "Senior AI/LLM Engineer с 4+ годами production-опыта в Kaspi Lab. RAG-системы, LangChain, LangGraph, Qdrant hybrid retrieval, anti-hallucination, Langfuse, RAGAS, NeMo Guardrails. Все требования закрыты, в том числе бонусы (PEFT, prompt injection защита)."
+  },
+  {
+    "resume_filename": "01_alexey_morozov_python_backend.docx",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 0.5,
+    "rationale": "Python+FastAPI стек закрыт, но нет коммерческого опыта с LLM, LangChain, RAG, Qdrant. Подходит для переучивания, не для immediate hire."
+  },
+  {
+    "resume_filename": "07_daniyar_tolegenov_nlp.pdf",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 0.5,
+    "rationale": "Опыт с LLM fine-tuning через QLoRA + vLLM, но нет коммерческого опыта с RAG, LangChain/LangGraph, Qdrant. Силён в model layer, не в application layer."
+  },
+  {
+    "resume_filename": "10_madina_kassenova_prompt.docx",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 0.5,
+    "rationale": "Хорошо знает LLM-инструменты (OpenAI/Anthropic API, structured outputs), но базовое знание LangChain/LangGraph (только туториалы), нет production-RAG опыта."
+  },
+  {
+    "resume_filename": "14_artem_vorontsov_python_backend.txt",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 0.5,
+    "rationale": "Python+FastAPI стек закрыт, активно изучает LLM (пет-проекты с OpenAI API, читает LangChain). Но нет production-опыта с RAG, Qdrant, LangChain, observability. Хороший кандидат с потенциалом, не immediate hire."
+  },
+  {
+    "resume_filename": "15_bekzat_mukhamedov_java.docx",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 0.0,
+    "rationale": "Java-разработчик без Python, без ML/AI опыта. Не подходит для AI/LLM Engineer."
+  },
+  {
+    "resume_filename": "17_natalia_kravchenko_qa.pdf",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 0.0,
+    "rationale": "QA Engineer без опыта разработки и без LLM-навыков. Не подходит для AI/LLM Engineer."
+  },
+  {
+    "resume_filename": "18_aruzhan_bektasova_student.txt",
+    "job_filename": "06_ai_llm_engineer.json",
+    "label": 0.0,
+    "rationale": "Студент без опыта работы. Вакансия требует 2+ года в разработке LLM-приложений или ML."
+  },
+  {
+    "resume_filename": "07_daniyar_tolegenov_nlp.pdf",
+    "job_filename": "07_ml_engineer_nlp.json",
+    "label": 1.0,
+    "rationale": "Senior NLP Engineer с 5 годами опыта. PyTorch, HuggingFace Transformers, fine-tuning (QLoRA), multilingual (Russian/Kazakh), ONNX/Triton deployment. Bonuses закрыты (multilingual, quantization, model distillation)."
+  },
+  {
+    "resume_filename": "06_timur_bekmuratov_ai_llm.pdf",
+    "job_filename": "07_ml_engineer_nlp.json",
+    "label": 0.5,
+    "rationale": "Опыт с LLM и embeddings есть, упоминается DistilBERT fine-tuning и работа с HuggingFace. Но фокус на RAG/agents, не на classical NLP (NER, классификация на BERT в продакшене)."
+  },
+  {
+    "resume_filename": "13_ruslan_kairov_ml_general.docx",
+    "job_filename": "07_ml_engineer_nlp.json",
+    "label": 0.5,
+    "rationale": "ML Engineer с фокусом на CV и tabular. Один проект с NLP (ru-BERT для классификации обращений) — limited experience. Нет fine-tuning, нет multilingual focus, нет production NLP опыта в нужном объёме."
+  },
+  {
+    "resume_filename": "11_sergey_litvinov_django.pdf",
+    "job_filename": "07_ml_engineer_nlp.json",
+    "label": 0.0,
+    "rationale": "Django Senior разработчик без ML/NLP опыта. Имеет Python но нет PyTorch/Transformers/fine-tuning."
+  },
+  {
+    "resume_filename": "12_olga_petrenko_ml.pdf",
+    "job_filename": "07_ml_engineer_nlp.json",
+    "label": 0.0,
+    "rationale": "ML Engineer классический (LightGBM/XGBoost). Нет PyTorch/Transformers/NLP опыта, фокус на tabular."
+  },
+  {
+    "resume_filename": "14_artem_vorontsov_python_backend.txt",
+    "job_filename": "07_ml_engineer_nlp.json",
+    "label": 0.0,
+    "rationale": "FastAPI Backend разработчик. Изучает LLM но нет production NLP/PyTorch/fine-tuning опыта."
+  },
+  {
+    "resume_filename": "08_karina_zhumabayeva_ds.pdf",
+    "job_filename": "08_data_scientist.json",
+    "label": 1.0,
+    "rationale": "Data Scientist с 3 годами в Halyk Bank. Все требования: Python, pandas, SQL, статистика, A/B-тесты (провела 20+ экспериментов), product analytics. Прямой банковский опыт."
+  },
+  {
+    "resume_filename": "02_aigul_seitzhanova_ml_credit.docx",
+    "job_filename": "08_data_scientist.json",
+    "label": 0.5,
+    "rationale": "ML/DS навыки и SQL есть, опыт с банковскими данными есть. Но фокус резюме — скоринг и риск-моделирование, не product-аналитика и A/B тесты."
+  },
+  {
+    "resume_filename": "12_olga_petrenko_ml.pdf",
+    "job_filename": "08_data_scientist.json",
+    "label": 0.0,
+    "rationale": "ML Engineer классический (logistics/retail). Нет product analytics, A/B тестирования, статистического фокуса."
+  },
+  {
+    "resume_filename": "14_artem_vorontsov_python_backend.txt",
+    "job_filename": "08_data_scientist.json",
+    "label": 0.0,
+    "rationale": "FastAPI Backend Developer. Не Data Scientist, нет pandas/SQL/statistics/A-B testing опыта."
+  },
+  {
+    "resume_filename": "18_aruzhan_bektasova_student.txt",
+    "job_filename": "08_data_scientist.json",
+    "label": 0.0,
+    "rationale": "Студент 1 курса, интересуется ML/DS но без опыта. Вакансия Data Scientist требует 2+ года и solid SQL/статистика."
+  },
+  {
+    "resume_filename": "19_viktor_semenov_1c.pdf",
+    "job_filename": "08_data_scientist.json",
+    "label": 0.0,
+    "rationale": "1С-программист без опыта с Python, SQL только в контексте 1С. Не подходит для Data Scientist роли."
+  },
+  {
+    "resume_filename": "09_aibek_nurlanov_cv.docx",
+    "job_filename": "09_computer_vision_engineer.json",
+    "label": 1.0,
+    "rationale": "Computer Vision Engineer с 3+ годами в Eurasian Bank: KYC, face recognition (ArcFace), liveness detection, OCR (PaddleOCR). PyTorch, OpenCV, ONNX. Бонусы из вакансии (OCR, biometric, fintech) закрыты."
+  },
+  {
+    "resume_filename": "11_sergey_litvinov_django.pdf",
+    "job_filename": "09_computer_vision_engineer.json",
+    "label": 0.0,
+    "rationale": "Django Senior разработчик без Deep Learning/CV опыта. Нет PyTorch, OpenCV, CNN работ."
+  },
+  {
+    "resume_filename": "12_olga_petrenko_ml.pdf",
+    "job_filename": "09_computer_vision_engineer.json",
+    "label": 0.0,
+    "rationale": "ML Engineer классический (табулярные данные). Нет Computer Vision, PyTorch, CNN архитектур опыта."
+  },
+  {
+    "resume_filename": "14_artem_vorontsov_python_backend.txt",
+    "job_filename": "09_computer_vision_engineer.json",
+    "label": 0.0,
+    "rationale": "FastAPI Backend, не CV разработчик. Нет PyTorch, OpenCV, image processing опыта."
+  },
+  {
+    "resume_filename": "15_bekzat_mukhamedov_java.docx",
+    "job_filename": "09_computer_vision_engineer.json",
+    "label": 0.0,
+    "rationale": "Java Backend Engineer. Не Python, нет Deep Learning/CV опыта, не подходит для Computer Vision Engineer."
+  },
+  {
+    "resume_filename": "10_madina_kassenova_prompt.docx",
+    "job_filename": "10_prompt_engineer.json",
+    "label": 1.0,
+    "rationale": "Prompt Engineer с 2 годами фокусированного опыта. Eval-framework на Promptfoo, A/B-тестирование промптов, structured outputs, guardrails, cost optimization (LiteLLM + LLMLingua), Langfuse Prompt Management. Все требования закрыты."
+  },
+  {
+    "resume_filename": "06_timur_bekmuratov_ai_llm.pdf",
+    "job_filename": "10_prompt_engineer.json",
+    "label": 0.5,
+    "rationale": "Имеет prompt engineering опыт как часть RAG-работы, использует Langfuse Prompt Management, eval через RAGAS. Но prompt engineering не основной фокус, а часть более широкой роли AI Engineer."
+  },
+  {
+    "resume_filename": "11_sergey_litvinov_django.pdf",
+    "job_filename": "10_prompt_engineer.json",
+    "label": 0.0,
+    "rationale": "Django Senior без LLM опыта. Нет знаний prompt engineering, LLM APIs, eval-фреймворков."
+  },
+  {
+    "resume_filename": "12_olga_petrenko_ml.pdf",
+    "job_filename": "10_prompt_engineer.json",
+    "label": 0.0,
+    "rationale": "ML Engineer классический (tabular models). Не Prompt Engineer, нет LLM/OpenAI-API/eval-frameworks опыта."
+  },
+  {
+    "resume_filename": "15_bekzat_mukhamedov_java.docx",
+    "job_filename": "10_prompt_engineer.json",
+    "label": 0.0,
+    "rationale": "Java Backend engineer. Не Python, нет LLM разработки и prompt engineering опыта."
+  }
+]

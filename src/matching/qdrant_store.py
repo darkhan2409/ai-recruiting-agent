@@ -28,22 +28,27 @@ def get_client() -> AsyncQdrantClient:
 async def init_collection() -> None:
     """Создать collection если её нет; idempotent (вызывается на старте api).
 
+    Размерность вектора берётся из текущего `EmbeddingProvider`, а не из
+    статики в config — иначе при смене `E5_MODEL` (e5-large 1024 → e5-base
+    768) collection бы создавалась с несовпадающим size, и upsert падал.
+
     Используем `Distance.COSINE` — по плану §4 (e5 normalized embeddings).
     """
+    # Локальный импорт — embedder тянет fastembed/openai, а qdrant_store
+    # должен импортироваться даже если эти deps лениво подгружаются.
+    from src.matching.embedding import get_default_embedder
+
     client = get_client()
     name = settings.qdrant_collection
     if await client.collection_exists(collection_name=name):
         logger.info("qdrant: collection %s already exists", name)
         return
+    dim = get_default_embedder().dim
     await client.create_collection(
         collection_name=name,
-        vectors_config=VectorParams(size=settings.embedding_dim, distance=Distance.COSINE),
+        vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
     )
-    logger.info(
-        "qdrant: created collection %s (dim=%d, cosine)",
-        name,
-        settings.embedding_dim,
-    )
+    logger.info("qdrant: created collection %s (dim=%d, cosine)", name, dim)
 
 
 async def upsert_resume(candidate_id: int, vector: list[float], payload: dict[str, Any]) -> None:

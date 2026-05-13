@@ -1,0 +1,6 @@
+{
+  "title": "Frontend Developer",
+  "language": "en",
+  "required_skills": ["react", "typescript", "redux", "javascript", "css"],
+  "description": "We are seeking a skilled Frontend Developer to join the digital products team at Home Credit Bank Kazakhstan. You will work on customer-facing web applications used by hundreds of thousands of clients daily.\n\nResponsibilities:\n— Develop new features for our customer-facing web banking application\n— Build reusable, accessible UI components using React and TypeScript\n— Integrate with REST APIs and GraphQL endpoints\n— Implement state management with Redux Toolkit / RTK Query\n— Write unit and integration tests (Jest, React Testing Library, Cypress)\n— Collaborate with designers (Figma) and backend engineers\n— Optimize application performance and bundle size\n— Participate in code reviews and architectural decisions\n\nRequirements:\n— 3+ years of commercial frontend development experience\n— Strong proficiency in React (hooks, context, performance optimization)\n— Solid TypeScript skills\n— Experience with Redux or other state management solutions\n— Good understanding of modern CSS (Flexbox, Grid, CSS-in-JS)\n— Familiarity with build tools (Vite, Webpack)\n— Understanding of web accessibility (WCAG)\n\nNice to have: Next.js, experience in fintech, knowledge of micro-frontends architecture, Storybook."
+}

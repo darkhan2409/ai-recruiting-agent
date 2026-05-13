@@ -9,25 +9,25 @@ HuggingFace-моделями (включая `intfloat/multilingual-e5-*`). Эт
 применяет их АВТОМАТИЧЕСКИ через `query_embed()` / `passage_embed()`, нам не
 нужно делать это вручную.
 
-Кэшируем только passages (резюме): они стабильны и часто повторяются (один и
-тот же файл при ре-обработке). Queries (вакансии) varied — кэш-hit редок.
+Вакансии получают lazy-кэш в колонке `jobs.embedding_cached` (см.
+`embed_query_for_job`). Passage-кэш для резюме был выпилен — encode идёт
+напрямую через `embedder.embed_passage()`.
 """
 
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import logging
 from functools import lru_cache
 from typing import Protocol, cast
 
 from openai import AsyncOpenAI
-from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.db import EmbeddingCache
+from src.db import Job as JobORM
+from src.schemas import Job
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,9 @@ logger = logging.getLogger(__name__)
 class EmbeddingProvider(Protocol):
     """Контракт провайдера эмбеддингов.
 
-    `model_version` входит в hash кэша — при смене модели старые векторы
-    автоматически становятся cache miss.
+    `model_version` — строковая метка для логов и кэша вакансий; на смену
+    модели старые `jobs.embedding_cached` инвалидируются вручную (через
+    миграцию или re-create job).
     """
 
     model_version: str
@@ -52,7 +53,12 @@ class E5Embedder:
     def __init__(self) -> None:
         from fastembed import TextEmbedding
 
-        self._model = TextEmbedding(model_name=settings.e5_model)
+        # cache_dir=settings.fastembed_cache_dir — без этого fastembed качает
+        # модель в /tmp, который теряется при recreate контейнера.
+        self._model = TextEmbedding(
+            model_name=settings.e5_model,
+            cache_dir=settings.fastembed_cache_dir,
+        )
         self.model_version = f"e5:{settings.e5_model}"
         self.dim = TextEmbedding.get_embedding_size(settings.e5_model)
 
@@ -96,7 +102,7 @@ class OpenAIEmbedder:
         resp = await self._client.embeddings.create(
             model=settings.openai_embedding_model, input=text
         )
-        return cast(list[float], resp.data[0].embedding)
+        return list(resp.data[0].embedding)
 
     async def embed_passage(self, text: str) -> list[float]:
         return await self._embed(text)
@@ -113,36 +119,38 @@ def get_default_embedder() -> EmbeddingProvider:
     return E5Embedder()
 
 
-def text_hash(text: str, model_version: str) -> str:
-    """sha256(text|model_version) — model_version в hash инвалидирует кэш при rotate."""
-    h = hashlib.sha256()
-    h.update(model_version.encode("utf-8"))
-    h.update(b"|")
-    h.update(text.encode("utf-8"))
-    return h.hexdigest()
-
-
-async def embed_passage_with_cache(
-    text: str, embedder: EmbeddingProvider, session: AsyncSession
+async def embed_query_for_job(
+    job: Job,
+    embedder: EmbeddingProvider,
+    session: AsyncSession,
 ) -> list[float]:
-    """Получить passage-эмбеддинг с кэшем по hash(text, model_version).
+    """Query-эмбеддинг для job.description с lazy-кэшем в `jobs.embedding_cached`.
 
-    SELECT → hit вернуть; miss → encode + INSERT ON CONFLICT DO NOTHING +
-    вернуть. Конкурентные insert-ы безопасны: первый победил, остальные
-    просто пропускаются (вектор тот же).
+    Семантика хранения — один-к-одному с job row: при пересчёте текста
+    вакансии создаётся новая Job (новый id). Ad-hoc вакансия (`job.id is
+    None`) кэш не получает.
+
+    Args:
+        job: Pydantic Job с заполненным `description` (id опционален).
+        embedder: Провайдер эмбеддингов.
+        session: Async SQLAlchemy сессия (вызывающий сам коммитит).
+
+    Returns:
+        Query-вектор размерности `embedder.dim`.
     """
-    h = text_hash(text, embedder.model_version)
-    cached: list[float] | None = await session.scalar(
-        select(EmbeddingCache.vector).where(EmbeddingCache.text_hash == h)
-    )
-    if cached is not None:
-        return cached
+    if job.embedding_cached is not None:
+        logger.debug("embed_query_for_job: cache hit (in-memory) for job_id=%s", job.id)
+        return job.embedding_cached
 
-    vector = await embedder.embed_passage(text)
-    stmt = (
-        pg_insert(EmbeddingCache)
-        .values(text_hash=h, vector=vector, model_version=embedder.model_version)
-        .on_conflict_do_nothing(index_elements=["text_hash"])
-    )
-    await session.execute(stmt)
+    vector = await embedder.embed_query(job.description)
+
+    if job.id is not None:
+        await session.execute(
+            update(JobORM).where(JobORM.id == job.id).values(embedding_cached=vector)
+        )
+        # Обновляем in-memory модель — повторный матчинг той же job в той
+        # же сессии не пойдёт в БД повторно.
+        job.embedding_cached = vector
+        logger.info("embed_query_for_job: cached vector for job_id=%s", job.id)
+
     return vector

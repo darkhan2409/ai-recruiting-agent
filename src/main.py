@@ -21,11 +21,18 @@ from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+from src.api.candidates import router as candidates_router
 from src.api.errors import register_exception_handlers
 from src.api.health import router as health_router
+from src.api.jobs import router as jobs_router
+from src.api.quarantine import router as quarantine_router
+from src.api.recommendations import router as recommendations_router
+from src.api.sync_mail import router as sync_mail_router
 from src.config import settings
+from src.db import session_factory
 from src.matching.qdrant_store import init_collection
 from src.workers.ingestion_tick import ingestion_tick
+from src.workers.job_seeder import seed_jobs_from_directory
 from src.workers.retention_cleanup import retention_cleanup
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -72,6 +79,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # Qdrant down на старте не должен блокировать api — /health покажет
         # degraded; ingestion упадёт в retry-loop, но api отдаёт endpoints.
         logger.exception("qdrant: init_collection failed; continuing with degraded vector layer")
+    try:
+        await seed_jobs_from_directory(settings.jobs_dir, session_factory)
+    except Exception:
+        # Battered seed-файлы или БД не доступна — не должно блокировать api.
+        logger.exception("job_seeder: failed; jobs table may be empty")
     scheduler = AsyncIOScheduler()
     _register_jobs(scheduler)
     scheduler.start()
@@ -91,3 +103,8 @@ app = FastAPI(
 app.add_middleware(CorrelationIdMiddleware)
 register_exception_handlers(app)
 app.include_router(health_router)
+app.include_router(recommendations_router)
+app.include_router(sync_mail_router)
+app.include_router(candidates_router)
+app.include_router(jobs_router)
+app.include_router(quarantine_router)

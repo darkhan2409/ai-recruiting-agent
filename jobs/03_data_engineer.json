@@ -1,0 +1,6 @@
+{
+  "title": "Data Engineer",
+  "language": "ru",
+  "required_skills": ["python", "airflow", "spark", "kafka", "sql"],
+  "description": "Home Credit Bank Kazakhstan расширяет команду Data Platform и ищет Data Engineer. Вы будете строить и поддерживать ETL/ELT пайплайны для DWH, обеспечивая аналитиков и ML-команду качественными данными.\n\nЗадачи:\n— Разработка и поддержка ETL-пайплайнов на Apache Airflow\n— Работа с большими данными через PySpark\n— Streaming-обработка событий через Apache Kafka\n— Проектирование data marts в Greenplum / ClickHouse\n— Оптимизация SQL-запросов и производительности хранилищ\n— Data quality checks (Great Expectations / собственные)\n— Документирование пайплайнов и схем данных\n\nТребования:\n— 2+ года опыта в Data Engineering\n— Уверенное знание Python и SQL\n— Опыт работы с Apache Airflow в продакшене\n— Опыт с распределёнными системами (Spark, Hadoop)\n— Понимание архитектур хранилищ (DWH, Lakehouse, Star/Snowflake schema)\n— Опыт работы с Kafka или аналогами\n— Linux, Docker, Git\n\nБудет плюсом: dbt, Trino/Presto, опыт работы с банковскими транзакционными данными, знание принципов GDPR."
+}

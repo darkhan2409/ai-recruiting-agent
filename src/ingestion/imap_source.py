@@ -70,7 +70,7 @@ class IMAPSource:
 
 def _message_to_email(msg: MailMessage) -> RawEmail:
     """Сконвертировать `MailMessage` в RawEmail; пустой Message-ID → uid-fallback."""
-    raw_mid = msg.headers.get("message-id", (None,))
+    raw_mid = msg.headers.get("message-id", (None,))  # type: ignore[no-untyped-call]
     message_id = raw_mid[0] if raw_mid and raw_mid[0] else f"uid:{msg.uid}"
     attachments = [
         RawAttachment(

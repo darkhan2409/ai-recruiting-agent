@@ -30,3 +30,26 @@ SYSTEM_PROMPT = """\
 def build_user_prompt(text: str) -> str:
     """Завернуть извлечённый текст в безопасный XML-разделитель."""
     return f"<resume_content>\n{text}\n</resume_content>"
+
+
+# --- Парсинг документа вакансии (POST /jobs/parse-document) ---
+
+JOB_PARSE_SYSTEM_PROMPT = """\
+Ты HR-аналитик. Из текста вакансии извлеки структурированные поля.
+Правила:
+- title: название должности, как написано в тексте
+- description: основное описание вакансии и требования к кандидату (объедини в один текст)
+- department: отдел или подразделение, если указано
+- experience_years: требуемый опыт (например "3-5 лет"), если указано
+- work_format: формат работы (офис/гибрид/удалёнка), если указано
+- salary_range: зарплатная вилка, если указано
+- responsibilities: обязанности, каждая с новой строки
+- conditions: условия и бенефиты, если указаны
+- required_skills: список ключевых технических навыков и технологий, lowercase, без дублей
+- language: язык вакансии — "ru" или "en"
+Если поле не найдено в тексте — верни null. Не выдумывай."""
+
+
+def build_job_parse_user_prompt(text: str) -> str:
+    """XML-обёртка для текста документа вакансии (ограждение от prompt injection)."""
+    return f"<job_document>\n{text}\n</job_document>"

@@ -1,0 +1,6 @@
+{
+  "title": "AI/LLM Engineer",
+  "language": "ru",
+  "required_skills": ["python", "langchain", "rag", "qdrant", "fastapi"],
+  "description": "Home Credit Bank Kazakhstan развивает направление AI Solutions и ищет AI/LLM Engineer для построения production-grade систем на базе больших языковых моделей. Вы будете работать над внутренними AI-продуктами банка — от RAG-ассистентов до агентных систем.\n\nЗадачи:\n— Проектирование и реализация RAG-систем над корпоративной документацией\n— Разработка LLM-агентов с использованием LangChain / LangGraph\n— Работа с векторными БД (Qdrant), оптимизация retrieval-пайплайнов\n— Интеграция OpenAI / Anthropic API в банковские продукты\n— Внедрение observability: Langfuse, трейсинг LLM-вызовов\n— Eval-фреймворки для качества генерации (RAGAS, кастомные метрики)\n— Борьба с галлюцинациями: anti-hallucination проверки, citations, guardrails\n\nТребования:\n— 2+ года в разработке LLM-приложений или ML\n— Уверенное знание Python и FastAPI\n— Опыт построения RAG-систем (чанкинг, эмбеддинги, hybrid retrieval, reranking)\n— Работа с векторными БД (Qdrant / Pinecone / Weaviate)\n— Понимание prompt engineering и техник снижения галлюцинаций\n— Docker, Git, CI/CD\n\nБудет плюсом: LangGraph, MCP, fine-tuning (LoRA/QLoRA), vLLM, prompt injection защита, опыт в финтехе."
+}

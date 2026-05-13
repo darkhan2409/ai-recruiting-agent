@@ -1,0 +1,6 @@
+{
+  "title": "Python Backend Engineer",
+  "language": "ru",
+  "required_skills": ["python", "fastapi", "postgresql", "docker", "redis"],
+  "description": "Home Credit Bank Kazakhstan ищет Python Backend Engineer в команду разработки внутренних сервисов. Вы будете заниматься развитием микросервисной архитектуры, проектированием API для интеграции с банковскими системами и оптимизацией производительности существующих сервисов.\n\nЗадачи:\n— Разработка и поддержка REST API на FastAPI\n— Проектирование схем БД в PostgreSQL, написание оптимизированных запросов и миграций (Alembic)\n— Работа с очередями сообщений (RabbitMQ / Kafka)\n— Кэширование через Redis\n— Контейнеризация сервисов (Docker, docker-compose)\n— Code review, написание unit и integration тестов (pytest)\n\nТребования:\n— 3+ года коммерческой разработки на Python\n— Глубокое знание FastAPI, асинхронного программирования (asyncio)\n— Опыт работы с PostgreSQL: индексы, EXPLAIN, оптимизация\n— Понимание принципов микросервисной архитектуры\n— Опыт с Docker в продакшене\n— Git, CI/CD\n\nБудет плюсом: опыт работы в финтехе, знание SQLAlchemy 2.0, опыт работы с Kafka."
+}

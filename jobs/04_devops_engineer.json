@@ -1,0 +1,6 @@
+{
+  "title": "DevOps Engineer",
+  "language": "en",
+  "required_skills": ["kubernetes", "terraform", "aws", "ci/cd", "linux"],
+  "description": "Home Credit Bank Kazakhstan is looking for a DevOps Engineer to join our Platform Engineering team. You will be responsible for the reliability, scalability, and security of our production infrastructure that serves millions of banking customers.\n\nResponsibilities:\n— Design, build, and maintain Kubernetes clusters (EKS) in AWS\n— Develop Infrastructure as Code using Terraform and Helm charts\n— Build and improve CI/CD pipelines (GitLab CI, ArgoCD)\n— Implement and maintain monitoring & observability stack (Prometheus, Grafana, Loki)\n— Incident response, on-call rotation, post-mortem analysis\n— Capacity planning and cost optimization for cloud resources\n— Security hardening: network policies, secrets management (Vault)\n\nRequirements:\n— 3+ years of hands-on DevOps / SRE experience\n— Production experience with Kubernetes (deployment, troubleshooting, networking)\n— Strong knowledge of Terraform and AWS services (EC2, EKS, RDS, S3, IAM)\n— Solid Linux administration skills\n— Scripting in Bash and Python\n— Experience designing CI/CD pipelines from scratch\n\nNice to have: experience in fintech/banking, knowledge of compliance frameworks (PCI DSS), service mesh (Istio), GitOps practices."
+}

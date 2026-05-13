@@ -16,12 +16,13 @@ intake-уровень — приём, идемпотентность, базов
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import re
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,9 +39,10 @@ from src.ingestion.base import (
 )
 from src.ingestion.folder_source import FolderSource
 from src.ingestion.imap_source import IMAPSource
-from src.matching.embedding import embed_passage_with_cache, get_default_embedder
+from src.matching.embedding import get_default_embedder
 from src.matching.qdrant_store import upsert_resume
 from src.parsing.pipeline import ParseSuccess, parse_resume
+from src.utils.pii import mask_pii
 
 logger = logging.getLogger(__name__)
 
@@ -67,13 +69,17 @@ async def upsert_processed(
     status: str,
     error: str | None = None,
 ) -> None:
-    """INSERT … ON CONFLICT DO UPDATE по `message_id`."""
+    """INSERT … ON CONFLICT DO UPDATE по `message_id`.
+
+    `updated_at` обновляется явно через `func.now()` — ORM `onupdate` не
+    срабатывает на core-уровне `pg_insert.on_conflict_do_update`.
+    """
     stmt = pg_insert(ProcessedEmail).values(
         message_id=message_id, status=status, error=error, attempts=0
     )
     stmt = stmt.on_conflict_do_update(
         index_elements=["message_id"],
-        set_={"status": status, "error": error},
+        set_={"status": status, "error": error, "updated_at": func.now()},
     )
     await session.execute(stmt)
 
@@ -98,8 +104,48 @@ async def record_quarantine(
     await upsert_processed(session, message_id=message_id, status="quarantined")
 
 
-async def record_failure(session: AsyncSession, *, message_id: str, error: str) -> None:
-    """Инкрементировать attempts; после MAX_ATTEMPTS — dead-letter."""
+def _build_dead_letter_payload(email: RawEmail | None) -> dict[str, Any] | None:
+    """Собрать PII-safe forensics payload для dead_letter_emails.
+
+    Сохраняем только метаданные: sender, subject, received_at и список
+    attachments с filename/content_type/size_bytes — БЕЗ raw bytes (PII).
+    `received_at` сериализуется в ISO 8601 для JSONB-совместимости.
+    """
+    if email is None:
+        return None
+    return {
+        "sender": email.sender,
+        "subject": email.subject,
+        "received_at": email.received_at.isoformat() if email.received_at else None,
+        "attachments": [
+            {
+                "filename": att.filename,
+                "content_type": att.content_type,
+                "size_bytes": att.size_bytes,
+            }
+            for att in email.attachments
+        ],
+    }
+
+
+async def record_failure(
+    session: AsyncSession,
+    *,
+    message_id: str,
+    error: str,
+    email: RawEmail | None = None,
+) -> None:
+    """Инкрементировать attempts; после MAX_ATTEMPTS — dead-letter.
+
+    Args:
+        session: Async-сессия.
+        message_id: Идентификатор письма.
+        error: Сообщение об ошибке (уйдёт в `processed_emails.error` и
+            `dead_letter_emails.reason`). Вызывающий код обязан передать уже
+            замаскированную через `mask_pii` строку (DATA_POLICY §«Логи»).
+        email: Опциональный RawEmail. Если передан и письмо уходит в
+            dead-letter — попадает в `payload` (PII-safe metadata, без bytes).
+    """
     stmt = (
         pg_insert(ProcessedEmail)
         .values(message_id=message_id, status="failed", error=error, attempts=1)
@@ -109,6 +155,7 @@ async def record_failure(session: AsyncSession, *, message_id: str, error: str) 
                 "status": "failed",
                 "error": error,
                 "attempts": ProcessedEmail.__table__.c.attempts + 1,
+                "updated_at": func.now(),
             },
         )
     )
@@ -118,11 +165,17 @@ async def record_failure(session: AsyncSession, *, message_id: str, error: str) 
         select(ProcessedEmail.attempts).where(ProcessedEmail.message_id == message_id)
     )
     if attempts is not None and attempts >= MAX_ATTEMPTS:
-        session.add(DeadLetter(source_message_id=message_id, payload=None, reason=error[:1000]))
+        session.add(
+            DeadLetter(
+                source_message_id=message_id,
+                payload=_build_dead_letter_payload(email),
+                reason=error[:1000],
+            )
+        )
         await session.execute(
             update(ProcessedEmail)
             .where(ProcessedEmail.message_id == message_id)
-            .values(status="dead_letter")
+            .values(status="dead_letter", updated_at=func.now())
         )
 
 
@@ -151,6 +204,7 @@ async def process_email(session: AsyncSession, email: RawEmail) -> None:
     """
     max_bytes = settings.max_attachment_mb * 1024 * 1024
     candidates_added = 0
+    duplicates_skipped = 0
     quarantined_any = False
     for att in email.attachments:
         ext = Path(att.filename).suffix.lower()
@@ -175,22 +229,39 @@ async def process_email(session: AsyncSession, email: RawEmail) -> None:
         path = _save_attachment(att, email.message_id)
         parse = await parse_resume(path)
         if isinstance(parse, ParseSuccess):
-            candidate = Candidate(
-                file_path=str(path),
-                source_message_id=email.message_id,
-                language=parse.language.value,
-                raw_text=parse.text,
-                parsed_data=parse.resume.model_dump(mode="json"),
+            content_hash = hashlib.sha256(parse.text.encode("utf-8")).hexdigest()
+            stmt = (
+                pg_insert(Candidate)
+                .values(
+                    file_path=str(path),
+                    source_message_id=email.message_id,
+                    language=parse.language.value,
+                    raw_text=parse.text,
+                    parsed_data=parse.resume.model_dump(mode="json"),
+                    content_hash=content_hash,
+                )
+                .on_conflict_do_nothing(index_elements=["content_hash"])
+                .returning(Candidate.id)
             )
-            session.add(candidate)
-            await session.flush()  # generates candidate.id для Qdrant point id
+            new_id = await session.scalar(stmt)
+            if new_id is None:
+                # Дубль: тот же контент уже есть в БД и в Qdrant. Не плодим
+                # row, не дёргаем embedder, не трогаем Qdrant.
+                logger.info(
+                    "ingestion: duplicate content_hash=%s skip (message_id=%s, file=%s)",
+                    content_hash[:8],
+                    email.message_id,
+                    path.name,
+                )
+                duplicates_skipped += 1
+                continue
             embedder = get_default_embedder()
-            vector = await embed_passage_with_cache(parse.text, embedder, session)
+            vector = await embedder.embed_passage(parse.text)
             await upsert_resume(
-                candidate_id=candidate.id,
+                candidate_id=new_id,
                 vector=vector,
                 payload={
-                    "candidate_id": candidate.id,
+                    "candidate_id": new_id,
                     "language": parse.language.value,
                     "source_message_id": email.message_id,
                 },
@@ -208,9 +279,10 @@ async def process_email(session: AsyncSession, email: RawEmail) -> None:
     if not quarantined_any:
         await upsert_processed(session, message_id=email.message_id, status="ingested")
     logger.info(
-        "ingestion: processed message_id=%s candidates=%d quarantined=%s",
+        "ingestion: processed message_id=%s candidates=%d duplicates=%d quarantined=%s",
         email.message_id,
         candidates_added,
+        duplicates_skipped,
         quarantined_any,
     )
 
@@ -242,17 +314,31 @@ async def poll_and_process(source: IngestionSource) -> dict[str, int]:
             except Exception as exc:
                 await session.rollback()
                 logger.exception("ingestion: failed message_id=%s", email.message_id)
-                # TODO (БЛОК 9.3): str(exc) может содержать фрагменты текста
-                # резюме (DATA_POLICY violation). После реализации mask_pii
-                # обернуть str(exc) перед записью в processed_emails.error.
+                # str(exc) может содержать фрагменты текста резюме
+                # (DATA_POLICY violation) — маскируем email/phone до записи в
+                # processed_emails.error.
                 async with session_factory() as fs:
-                    await record_failure(fs, message_id=email.message_id, error=str(exc))
+                    await record_failure(
+                        fs,
+                        message_id=email.message_id,
+                        error=mask_pii(str(exc)),
+                        email=email,
+                    )
                     await fs.commit()
                 counts["failed"] += 1
     return counts
 
 
 async def poll_once_default() -> dict[str, int]:
-    """Точка входа для `ingestion_tick` и `POST /sync-mail`."""
-    source: IngestionSource = FolderSource() if settings.use_mocks else IMAPSource()
+    """Точка входа для `ingestion_tick` и `POST /sync-mail`.
+
+    Источник определяется `settings.ingestion_source`:
+      • "imap" — живой IMAPSource;
+      • "folder" — FolderSource из `inbox_dir`;
+      • "auto" — folder при `use_mocks=True`, иначе imap (backwards-compat).
+    """
+    mode = settings.ingestion_source
+    if mode == "auto":
+        mode = "folder" if settings.use_mocks else "imap"
+    source: IngestionSource = FolderSource() if mode == "folder" else IMAPSource()
     return await poll_and_process(source)
